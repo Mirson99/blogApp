@@ -22,6 +22,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
+// connect with database
+const mongoose = require("mongoose");
+mongoose.set('strictQuery', false);
+const mongoDB = "mongodb+srv://lukmir99:qwerty123@cluster0.rflxygf.mongodb.net/blog_service?retryWrites=true&w=majority";
+
+main().catch(err => console.log(err));
+
+async function main() {
+  await mongoose.connect(mongoDB);
+}
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
