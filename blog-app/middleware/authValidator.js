@@ -26,6 +26,13 @@ const registerValidationRules = () => {
   ];
 };
 
+const loginValidationRules = () => {
+  return [
+    body("username", "Username required").trim().isLength({ min: 3 }).escape(),
+    body("password", "Password required").trim().isLength({ min: 8 }).escape(),
+  ];
+};
+
 const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (errors.isEmpty()) {
@@ -41,5 +48,6 @@ const validate = (req, res, next) => {
 
 module.exports = {
   registerValidationRules,
+  loginValidationRules,
   validate,
 };
