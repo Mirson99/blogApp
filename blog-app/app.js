@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 var authRouter = require('./routes/auth');
+var postsRouter = require('./routes/posts');
 
 var app = express();
 
@@ -19,6 +20,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/auth/', authRouter);
+app.use('/api/posts/', postsRouter);
 
 // connect with database
 const mongoose = require("mongoose");
