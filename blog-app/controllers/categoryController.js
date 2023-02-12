@@ -1,19 +1,13 @@
 const {
-  getPosts,
-  addPost,
-  getPost,
-  deletePost,
-  updatePost,
-} = require("../services/posts.service");
-const {
-  createPostValidationRules,
-  singlePostValidationRules,
-  updatePostValidationRules,
-  validate,
-} = require("../middleware/postValidator");
+  getCategories,
+  addCategory,
+  getCategory,
+  deleteCategory,
+  updateCategory,
+} = require("../services/categories.service");
 
-exports.posts_list = function (req, res, next) {
-  getPosts(req.query, function (response) {
+exports.categories_list = function (req, res, next) {
+  getCategories(function (response) {
     if (response instanceof Error) {
       return res.status(response.status).end();
     }
@@ -21,11 +15,9 @@ exports.posts_list = function (req, res, next) {
   });
 };
 
-exports.create_post = [
-  createPostValidationRules(),
-  validate,
+exports.create_category = [
   (req, res, next) => {
-    addPost(req.body, function (response) {
+    addCategory(req.body, function (response) {
       if (response instanceof Error) {
         return res.status(response.status).json(response.message).end();
       }
@@ -34,11 +26,9 @@ exports.create_post = [
   },
 ];
 
-exports.get_single_post = [
-  singlePostValidationRules(),
-  validate,
+exports.get_category = [
   (req, res, next) => {
-    getPost(req.params.id, function (response) {
+    getCategory(req.params.id, function (response) {
       if (response instanceof Error) {
         return res.status(response.status).json(response.message).end();
       }
@@ -47,11 +37,9 @@ exports.get_single_post = [
   },
 ];
 
-exports.delete_single_post = [
-  singlePostValidationRules(),
-  validate,
+exports.delete_category = [
   (req, res, next) => {
-    deletePost(req.params.id, function (response) {
+    deleteCategory(req.params.id, function (response) {
       if (response instanceof Error) {
         return res.status(response.status).json(response.message).end();
       }
@@ -60,12 +48,9 @@ exports.delete_single_post = [
   },
 ];
 
-exports.update_single_post = [
-  singlePostValidationRules(),
-  updatePostValidationRules(),
-  validate,
+exports.update_category = [
   (req, res, next) => {
-    updatePost(req.params.id, req.body, function (response) {
+    updateCategory(req.params.id, req.body, function (response) {
       if (response instanceof Error) {
         return res.status(response.status).json(response.message).end();
       }

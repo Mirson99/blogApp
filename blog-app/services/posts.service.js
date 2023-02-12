@@ -3,14 +3,15 @@ const User = require("../models/user");
 const Category = require("../models/category");
 const async = require("async");
 
-const getPosts = async (cb) => {
-  await Post.find()
-    .sort([["name"]])
+const getPosts = async (query, cb) => {
+  const searchQuery = query.userId ? { author: query.userId } : {};
+  await Post.find(searchQuery)
+    .sort([["title"]])
     .exec(function (err, posts) {
       if (err) {
+        err.status = 500;
         return cb(err);
       }
-
       return cb(posts);
     });
 };
@@ -22,7 +23,7 @@ const addPost = async (params, cb) => {
         User.findOne({ username: params.author }, function (err, user) {
           if (user == null) {
             err = new Error("User not found");
-            err.status = 500;
+            err.status = 404;
             callback(err, null);
           } else {
             callback(null, user.id);
@@ -33,7 +34,7 @@ const addPost = async (params, cb) => {
         Category.findOne({ name: params.category }, function (err, category) {
           if (category == null) {
             err = new Error("Category not found");
-            err.status = 500;
+            err.status = 404;
             callback(err, null);
           } else {
             callback(null, userId, category.id);

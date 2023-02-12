@@ -6,6 +6,7 @@ var logger = require('morgan');
 
 var authRouter = require('./routes/auth');
 var postsRouter = require('./routes/posts');
+var categoriesRouter = require('./routes/categories');
 
 var app = express();
 
@@ -21,6 +22,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/auth/', authRouter);
 app.use('/api/posts/', postsRouter);
+app.use('/api/categories/', categoriesRouter);
 
 // connect with database
 const mongoose = require("mongoose");
