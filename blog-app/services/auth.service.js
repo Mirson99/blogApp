@@ -1,5 +1,7 @@
 const async = require("async");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 const User = require("../models/user");
 
@@ -36,8 +38,6 @@ const addUser = async (params) => {
 };
 
 const loginUser = async (params, cb) => {
-  let returnUser;
-
   async.waterfall(
     [
       function (callback) {
@@ -62,15 +62,114 @@ const loginUser = async (params, cb) => {
           }
         });
       },
+      function (user, callback) {
+        const accessToken = jwt.sign(
+          { username: user.username },
+          process.env.ACCESS_TOKEN_SECRET,
+          { expiresIn: "30s" }
+        );
+        const refreshToken = jwt.sign(
+          { username: user.username },
+          process.env.REFRESH_TOKEN_SECRET,
+          { expiresIn: "1d" }
+        );
+
+        user.refreshToken = refreshToken;
+
+        User.findByIdAndUpdate(user.id, user, {}, (err) => {
+          if (err) {
+            callback(err, null);
+          } else {
+            callback(null, accessToken, refreshToken);
+          }
+        });
+      },
     ],
-    function (err, user) {
+    function (err, accessToken, refreshToken) {
       if (err) {
         return cb(err);
       }
 
-      const { password, ...others } = user._doc;
-      returnUser = others;
-      return cb(returnUser);
+      return cb({ refreshToken, accessToken });
+    }
+  );
+};
+
+const refreshToken = (refreshToken, cb) => {
+  async.waterfall(
+    [
+      function (callback) {
+        User.findOne({ refreshToken: refreshToken }, function (err, user) {
+          if (user == null) {
+            err = new Error("Wrong refresh token");
+            err.status = 403;
+            callback(err, null);
+          } else {
+            callback(null, user);
+          }
+        });
+      },
+      function (user, callback) {
+        jwt.verify(
+          refreshToken,
+          process.env.REFRESH_TOKEN_SECRET,
+          (err, decoded) => {
+            if (err || user.username !== decoded.username) {
+              err.status = 403;
+              callback(err, null);
+            }
+            const accessToken = jwt.sign(
+              { username: decoded.username },
+              process.env.ACCESS_TOKEN_SECRET,
+              { expiresIn: "30s" }
+            );
+            callback(null, accessToken);
+          }
+        );
+      },
+    ],
+    function (err, accessToken) {
+      if (err) {
+        return cb(err);
+      }
+
+      return cb({ accessToken });
+    }
+  );
+};
+
+const logout = (refreshToken, cb) => {
+  async.waterfall(
+    [
+      function (callback) {
+        User.findOne({ refreshToken: refreshToken }, function (err, user) {
+          if (user == null) {
+            err = new Error("User not found - cookies cleared");
+            err.status = 204;
+            callback(err, null);
+          } else {
+            callback(null, user);
+          }
+        });
+      },
+      function (user, callback) {
+        user.refreshToken = "";
+
+        User.findByIdAndUpdate(user.id, user, {}, (err) => {
+          if (err) {
+            callback(err, null);
+          } else {
+            callback(null);
+          }
+        });
+      },
+    ],
+    function (err) {
+      if (err) {
+        return cb(err);
+      }
+
+      return cb();
     }
   );
 };
@@ -78,4 +177,6 @@ const loginUser = async (params, cb) => {
 module.exports = {
   addUser,
   loginUser,
+  refreshToken,
+  logout,
 };

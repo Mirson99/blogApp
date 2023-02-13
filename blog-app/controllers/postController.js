@@ -12,14 +12,19 @@ const {
   validate,
 } = require("../middleware/postValidator");
 
-exports.posts_list = function (req, res, next) {
-  getPosts(req.query, function (response) {
-    if (response instanceof Error) {
-      return res.status(response.status).end();
-    }
-    res.json(response);
-  });
-};
+const verifyJWT = require("../middleware/verifyJWT");
+
+exports.posts_list = [
+  verifyJWT,
+  (req, res, next) => {
+    getPosts(req.query, function (response) {
+      if (response instanceof Error) {
+        return res.status(response.status).end();
+      }
+      res.json(response);
+    });
+  },
+];
 
 exports.create_post = [
   createPostValidationRules(),

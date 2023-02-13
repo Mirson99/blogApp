@@ -20,6 +20,7 @@ const UserSchema = new Schema(
     },
     password: { type: String, required: true, minLength: 8 },
     profilePic: { type: String, default: "" },
+    refreshToken: { type: String, default: "" },
   },
   { timestamps: true }
 );
